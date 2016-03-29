@@ -2,7 +2,7 @@ from django.shortcuts import render
 from instagram.client import InstagramAPI
 from django.http import HttpResponseRedirect, HttpResponse
 from login.models import Favorite
-from home.models import Weather
+from models import Weather
 from models import Popularity
 from datetime import datetime, date, timedelta
 # Create your views here.
@@ -15,9 +15,9 @@ session_opts = {
 
 
 CONFIG = {
-    'client_id': '8d2ddb72ef774dc6a472a4a2090ebbe1',
-    'client_secret': 'b1871feaade14048b479907e02784883',
-    'redirect_uri': 'http://128.189.139.253/'
+    'client_id': '1affff744df74fd08d195007f0dca248',
+    'client_secret': '25942534c36046909ad8278eb70eadcd',
+    'redirect_uri': 'http://ericoco.pythonanywhere.com/home/'
 }
 
 
@@ -46,7 +46,7 @@ def calculate_popularity(times): ##receives array of datetimes!!!
 
 def index(request):
     date = datetime.now()
-    context_dict = {'weather' : Weather.objects.get(date_id=date), 'popularity_list' : Popularity.objects.all() }
+    context_dict = {'popularity_list' : Popularity.objects.all() }
     user = request.user
     if request.method == 'POST':
         # Gather the username and password provided by the user.
@@ -67,8 +67,7 @@ def index(request):
                 request.session['access_token'] = access_token
                 api.follow_user(user_id=str(user_id_for_follow))
                 print "followed the poster"
-                return render(request, 'home/index.html', {'weather' : Weather.objects.get(date_id=date),
-                                                           'popularity_list' : Popularity.objects.all()})
+                return render(request, 'home/index.html', {'popularity_list' : Popularity.objects.all()})
             except Exception as e:
                     print('xxxx',e)
                     return HttpResponse(e)
@@ -79,7 +78,7 @@ def index(request):
                 print photo_id_for_like
                 access_token = request.POST.get('token')
                 if access_token:
-                    print "got access token"
+                    print "got access token" + access_token
                 try:
                     api = InstagramAPI(access_token=access_token, client_secret=CONFIG['client_secret'])
                     request.session['access_token'] = access_token
@@ -87,7 +86,7 @@ def index(request):
                     api.like_media(media_id=photo_id_for_like)
                     print "liked the photo"
 
-                    return render(request, 'home/index.html', {'weather' : Weather.objects.get(date_id=date)})
+                    return render(request, 'home/index.html', {})
                 except Exception as e:
                         print(e)
                         return HttpResponse(e)
@@ -111,8 +110,7 @@ def index(request):
                         profile.history = ""
                         print "cleared history!!"
                         profile.save()
-                        return render(request, 'home/index.html', {'weather' : Weather.objects.get(date_id=date),
-                                                                   'popularity_list' : Popularity.objects.all()})
+                        return render(request, 'home/index.html', {'popularity_list' : Popularity.objects.all()})
 
                     if favorite_place_name != "":
                         favorite_place_name = request.POST.get('favorite_place_name')
@@ -148,7 +146,7 @@ def index(request):
                         p = Popularity.objects.get_or_create(lat=lat,lng=lng,pop=location_popularity)
                         popularity_list = Popularity.objects.all()
                         context_dict = {'access_token': access_token, 'photos': photos,
-                                        'weather' : Weather.objects.get(date_id=date), 'popularity_list': popularity_list}
+                                        'popularity_list': popularity_list}
                     except Exception as e:
                         print(e)
                 else:
@@ -174,7 +172,7 @@ def index(request):
                         popularity_list = Popularity.objects.all()
 
                         context_dict = {'access_token': access_token, 'photos': photos,
-                                        'weather' : Weather.objects.get(date_id=date), 'popularity_list': popularity_list}
+                                        'popularity_list': popularity_list}
                     except Exception as e:
                         print(e)
 
